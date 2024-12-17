@@ -24,8 +24,8 @@ const SignUp = () => {
         }
         setError('');
         try {
-            console.log('Form submitted:', userData);
-            await axios.post('http://localhost:4000/users/signup', userData);
+            const response = await axios.post('http://localhost:4000/users/signup', userData);
+            console.log(response.data);
         } catch (error) {
             console.log(error.response);
             setError(error.response.data.error);
