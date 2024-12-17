@@ -13,7 +13,11 @@ const MapComponent = () => {
   const [places, setPlaces] = useState([]);
   const [radius, setRadius] = useState(1000);
   const [error, setError] = useState(null)
-
+  const [placeTypes, setPlaceTypes] = useState({
+    restaurant: false,
+    cafe: false,
+    park: false
+  });
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -36,10 +40,13 @@ const MapComponent = () => {
     console.log(selectedLocation);
     await fetchPlaces(lat,lng,radius);
   };
+  const handlePlaceTypeChange = (e) => {
+    setPlaceTypes({...placeTypes, [e.target.name]: e.target.checked});
+  };
   const fetchPlaces = async (lat,lng,radius) => {
     setError('');
     try {
-      const response = await axios.post('http://localhost:4000/apiPlaces/places', {lat, lng, radius});
+      const response = await axios.post('http://localhost:4000/apiPlaces/places', { lat, lng, radius, placeTypes });
       setPlaces(response.data);
       console.log(response.data);
     } catch(error) {
@@ -51,6 +58,20 @@ const MapComponent = () => {
   return (
     <>
     {error && <div style={{ color: 'red' }}>{error}</div>}
+    <div className='place-types'>
+      <h3>Select Place Types</h3>
+        {Object.keys(placeTypes).map((type) => (
+          <label key={type}>
+            <input
+              type="checkbox"
+              name={type}
+              checked={placeTypes[type]}
+              onChange={handlePlaceTypeChange}
+            />
+            {type}
+          </label>
+        ))}
+    </div>
     <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
