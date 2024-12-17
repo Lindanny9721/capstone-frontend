@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import axios from 'axios';
 
 const mapContainerStyle = {
@@ -13,11 +13,8 @@ const MapComponent = () => {
   const [places, setPlaces] = useState([]);
   const [radius, setRadius] = useState(1000);
   const [error, setError] = useState(null)
-  const [placeTypes, setPlaceTypes] = useState({
-    restaurant: false,
-    cafe: false,
-    park: false
-  });
+  const [selectedPlaceType, setSelectedPlaceTypes] = useState('restaurant');
+  const placeTypes = ['restaurant', 'cafe', 'park'];
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -41,12 +38,12 @@ const MapComponent = () => {
     await fetchPlaces(lat,lng,radius);
   };
   const handlePlaceTypeChange = (e) => {
-    setPlaceTypes({...placeTypes, [e.target.name]: e.target.checked});
+    setSelectedPlaceTypes(e.target.value);
   };
   const fetchPlaces = async (lat,lng,radius) => {
     setError('');
     try {
-      const response = await axios.post('http://localhost:4000/apiPlaces/places', { lat, lng, radius, placeTypes });
+      const response = await axios.post('http://localhost:4000/apiPlaces/places', { lat, lng, radius, selectedPlaceType });
       setPlaces(response.data);
       console.log(response.data);
     } catch(error) {
@@ -60,12 +57,13 @@ const MapComponent = () => {
     {error && <div style={{ color: 'red' }}>{error}</div>}
     <div className='place-types'>
       <h3>Select Place Types</h3>
-        {Object.keys(placeTypes).map((type) => (
+      {placeTypes.map((type) => (
           <label key={type}>
             <input
-              type="checkbox"
-              name={type}
-              checked={placeTypes[type]}
+              type="radio"
+              name="placeType"
+              value={type}
+              checked={selectedPlaceType === type}
               onChange={handlePlaceTypeChange}
             />
             {type}
